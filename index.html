@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>THE GAME</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --card: #161616;
+    --border: #222222;
+    --accent: #ff2d2d;
+    --accent2: #ff6b35;
+    --text: #e8e8e8;
+    --muted: #666666;
+    --green: #00ff88;
+    --danger: #ff2d2d;
+    --warn: #ffaa00;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── PHONE SHELL ── */
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: #050505;
+    border-radius: 50px;
+    border: 2px solid #2a2a2a;
+    box-shadow: 0 0 60px rgba(255,45,45,0.08), 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px #333;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Notch */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 130px; height: 28px;
+    background: #050505;
+    border-radius: 0 0 20px 20px;
+    z-index: 100;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 24px 6px;
+    font-size: 11px;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--muted);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 50;
+  }
+
+  .status-left { letter-spacing: 1px; }
+  .status-right { display: flex; gap: 6px; align-items: center; }
+  .signal-dot { width: 4px; height: 4px; background: var(--muted); border-radius: 50%; }
+
+  /* ── SCREENS ── */
+  .screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+  .screen.active { display: flex; }
+
+  /* ── CHARACTER SELECT ── */
+  #screen-select {
+    padding: 0 20px 20px;
+    overflow-y: auto;
+    gap: 0;
+  }
+
+  #screen-select::-webkit-scrollbar { display: none; }
+
+  .select-header {
+    text-align: center;
+    padding: 20px 0 24px;
+    position: sticky;
+    top: 0;
+    background: #050505;
+    z-index: 10;
+  }
+
+  .select-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .select-subtitle {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .char-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .char-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .char-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .char-card:hover, .char-card:active {
+    border-color: var(--accent);
+    background: #1a1111;
+    transform: translateX(2px);
+  }
+
+  .char-card:hover::before { opacity: 1; }
+
+  .char-avatar {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 15px;
+    color: white;
+    flex-shrink: 0;
+    letter-spacing: -1px;
+  }
+
+  .char-info { flex: 1; min-width: 0; }
+  .char-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .char-actor {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 1px;
+  }
+  .char-role {
+    font-size: 9px;
+    color: var(--accent);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+  }
+
+  .char-arrow {
+    color: var(--muted);
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* ── GAME SCREEN ── */
+  #screen-game {
+    background: var(--bg);
+  }
+
+  .game-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    position: relative;
+  }
+
+  .game-content::-webkit-scrollbar { display: none; }
+
+  /* Game header / app bar */
+  .game-header {
+    padding: 12px 20px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .game-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: var(--accent);
+  }
+
+  .score-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  /* Page blocks stacked vertically */
+  .page-block {
+    min-height: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 16px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  /* Notification card - the ding */
+  .notif-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .notif-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  .notif-app {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .notif-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink 1.2s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .notif-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .notif-body {
+    font-size: 13px;
+    color: #aaa;
+    line-height: 1.6;
+  }
+
+  /* Rules list */
+  .rule-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #0f0f0f;
+    border: 1px solid #1e1e1e;
+    border-radius: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  .rule-icon { color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+
+  /* Score display */
+  .score-display {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .score-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .score-label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .score-bar-bg {
+    background: #1a1a1a;
+    height: 6px;
+    border-radius: 3px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s ease;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+
+  /* Mission card */
+  .mission-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .mission-header {
+    background: #1a0a0a;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mission-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .mission-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .mission-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mission-desc {
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.6;
+  }
+
+  .mission-rules {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mission-rule {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 6px 10px;
+    background: #111;
+    border-radius: 6px;
+    border-left: 2px solid var(--accent);
+  }
+
+  /* Timer */
+  .timer-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px;
+    background: #0f0f0f;
+    border-radius: 12px;
+    border: 1px solid #1e1e1e;
+  }
+
+  .timer-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--warn);
+    letter-spacing: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timer-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    text-align: center;
+  }
+
+  /* Alert / event card */
+  .alert-card {
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .alert-card.danger { background: #1a0505; border: 1px solid #3a0f0f; }
+  .alert-card.success { background: #051a0d; border: 1px solid #0f3a1f; }
+  .alert-card.warn { background: #1a1205; border: 1px solid #3a2a0f; }
+  .alert-card.info { background: #050d1a; border: 1px solid #0f1f3a; }
+
+  .alert-icon { font-size: 18px; flex-shrink: 0; }
+  .alert-text { font-size: 13px; line-height: 1.5; }
+  .alert-card.danger .alert-text { color: #ff8080; }
+  .alert-card.success .alert-text { color: #80ffbb; }
+  .alert-card.warn .alert-text { color: #ffcc80; }
+  .alert-card.info .alert-text { color: #80bbff; }
+
+  /* Section label */
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  /* Elimination overlay */
+  .elim-card {
+    background: #0d0505;
+    border: 1px solid var(--danger);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .elim-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--danger);
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .elim-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* HIDDEN NEXT BUTTON - blends into background */
+  .hidden-btn {
+    position: relative;
+    margin: 4px 0 8px;
+    height: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hidden-btn::after {
+    content: '▼';
+    font-size: 8px;
+    color: #1a1a1a;
+    transition: color 0.3s;
+  }
+
+  .hidden-btn:active::after { color: #333; }
+
+  /* Scroll hint */
+  .scroll-hint {
+    text-align: center;
+    padding: 12px 0 4px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #2a2a2a;
+    font-family: 'Share Tech Mono', monospace;
+    animation: fadeUpDown 2s infinite ease-in-out;
+  }
+
+  @keyframes fadeUpDown {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 0.6; transform: translateY(3px); }
+  }
+
+  /* ── INTRO ANIMATION ── */
+  .intro-screen {
+    position: absolute;
+    inset: 0;
+    background: #050505;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 200;
+    animation: introFade 0.8s 2.8s ease forwards;
+  }
+
+  @keyframes introFade {
+    to { opacity: 0; pointer-events: none; }
+  }
+
+  .intro-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: var(--accent);
+    animation: glitch 0.1s 1.5s, glitch 0.1s 2s;
+  }
+
+  @keyframes glitch {
+    0% { text-shadow: 2px 0 var(--accent2), -2px 0 #0ff; transform: translateX(0); }
+    25% { text-shadow: -3px 0 var(--accent2), 3px 0 #0ff; transform: translateX(3px); }
+    75% { text-shadow: 3px 0 var(--accent2), -3px 0 #0ff; transform: translateX(-3px); }
+    100% { text-shadow: none; transform: translateX(0); }
+  }
+
+  .intro-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 5px;
+    color: var(--muted);
+    animation: typeIn 1s 0.5s both;
+  }
+
+  @keyframes typeIn {
+    from { opacity: 0; letter-spacing: 15px; }
+    to { opacity: 1; letter-spacing: 5px; }
+  }
+
+  .intro-bar {
+    width: 200px; height: 2px;
+    background: #1a1a1a;
+    border-radius: 1px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .intro-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    animation: loadBar 2.2s 0.3s ease forwards;
+    width: 0;
+  }
+
+  @keyframes loadBar { to { width: 100%; } }
+
+  /* ── GAME OVER screen ── */
+  #screen-gameover {
+    align-items: center;
+    justify-content: center;
+    padding: 30px 24px;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .go-icon { font-size: 48px; animation: pulse 2s infinite; }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.05); filter: brightness(1.2); }
+  }
+
+  .go-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 3px;
+  }
+
+  .go-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    line-height: 2;
+  }
+
+  .go-msg {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    letter-spacing: 2px;
+    line-height: 1.8;
+  }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px 0;
+  }
+
+  /* Character accent colors */
+  .c-marc   { background: linear-gradient(135deg, #b91c1c, #7f1d1d); }
+  .c-thomas { background: linear-gradient(135deg, #1d4ed8, #1e3a8a); }
+  .c-lucas  { background: linear-gradient(135deg, #0f766e, #134e4a); }
+  .c-kevin  { background: linear-gradient(135deg, #b45309, #78350f); }
+  .c-julien { background: linear-gradient(135deg, #4c1d95, #2e1065); }
+  .c-claire { background: linear-gradient(135deg, #be185d, #831843); }
+  .c-elise  { background: linear-gradient(135deg, #065f46, #022c22); }
+
+  /* Responsive for desktop view */
+  @media (min-height: 870px) {
+    body { padding: 20px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+
+  <!-- Intro animation -->
+  <div class="intro-screen" id="intro">
+    <div class="intro-logo">THE GAME</div>
+    <div class="intro-sub">INITIALISATION...</div>
+    <div class="intro-bar"><div class="intro-bar-fill"></div></div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span class="status-left" id="clock">22:47</span>
+    <div class="status-right">
+      <span class="signal-dot"></span>
+      <span class="signal-dot"></span>
+      <span class="signal-dot"></span>
+      <span style="font-size:10px">▋▋</span>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: CHARACTER SELECT ── -->
+  <div class="screen active" id="screen-select">
+    <div class="select-header">
+      <div class="select-title">● Configuration ●</div>
+      <div class="select-subtitle">SÉLECTIONNE TON PERSONNAGE</div>
+    </div>
+    <div class="char-grid">
+      <div class="char-card" onclick="selectChar('marc')">
+        <div class="char-avatar c-marc">MA</div>
+        <div class="char-info">
+          <div class="char-name">MARC</div>
+          <div class="char-actor">Yassine</div>
+          <div class="char-role">Le Leader Dominant</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+      <div class="char-card" onclick="selectChar('thomas')">
+        <div class="char-avatar c-thomas">TH</div>
+        <div class="char-info">
+          <div class="char-name">THOMAS</div>
+          <div class="char-actor">Assil</div>
+          <div class="char-role">Le Peureux Hypersensible</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+      <div class="char-card" onclick="selectChar('lucas')">
+        <div class="char-avatar c-lucas">LU</div>
+        <div class="char-info">
+          <div class="char-name">LUCAS</div>
+          <div class="char-actor">Ahmed</div>
+          <div class="char-role">L'Intelligent Analytique</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+      <div class="char-card" onclick="selectChar('kevin')">
+        <div class="char-avatar c-kevin">KE</div>
+        <div class="char-info">
+          <div class="char-name">KEVIN</div>
+          <div class="char-actor">Ismail</div>
+          <div class="char-role">Le Violent Impulsif</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+      <div class="char-card" onclick="selectChar('julien')">
+        <div class="char-avatar c-julien">JU</div>
+        <div class="char-info">
+          <div class="char-name">JULIEN</div>
+          <div class="char-actor">Amine</div>
+          <div class="char-role">Le Mystérieux Calme</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+      <div class="char-card" onclick="selectChar('claire')">
+        <div class="char-avatar c-claire">CL</div>
+        <div class="char-info">
+          <div class="char-name">CLAIRE</div>
+          <div class="char-actor">Sirine</div>
+          <div class="char-role">La Femme Principale</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+      <div class="char-card" onclick="selectChar('elise')">
+        <div class="char-avatar c-elise">ÉL</div>
+        <div class="char-info">
+          <div class="char-name">ÉLISE</div>
+          <div class="char-actor">Emna</div>
+          <div class="char-role">L'Émotionnelle Empathique</div>
+        </div>
+        <div class="char-arrow">›</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: GAME ── -->
+  <div class="screen" id="screen-game">
+    <div class="game-header">
+      <div class="game-logo">▶ GAME</div>
+      <div class="score-pill" id="score-display">50 / 100</div>
+    </div>
+    <div class="game-content" id="game-content">
+      <!-- Pages injected by JS -->
+    </div>
+  </div>
+
+  <!-- ── SCREEN: GAME OVER ── -->
+  <div class="screen" id="screen-gameover">
+    <div class="go-icon">☠</div>
+    <div class="go-title">GAME OVER</div>
+    <div class="go-sub">SCORE FINAL : 0<br>STATUT : ÉLIMINÉ</div>
+    <div class="go-msg">📱 SEE YOU IN THE NEXT ROUND.</div>
+    <hr class="divider" style="width:100%">
+    <div style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:2px;line-height:2">
+      Le jeu te remercie<br>de ta participation.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Clock ──
+function updateClock() {
+  const d = new Date();
+  document.getElementById('clock').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// ── Character data ──
+const CHARS = {
+  marc:   { name:'MARC',   color:'#b91c1c', initials:'MA', startScore:35,
+            pages: ['intro','rules','score_35','mission1_start','confession_claire','mission2_start','mission2_result_marc','mission3_start','watch_destroy','mission4_start','cave_wait','mission5_start','mission5_result','mission6_start','mission6_result','final','gameover'] },
+  thomas: { name:'THOMAS', color:'#1d4ed8', initials:'TH', startScore:50,
+            pages: ['intro','rules','score_50','mission1_start','thomas_confession','mission2_start','mission2_thomas','mission3_start','thomas_destroy','mission4_start','cave_wait','mission5_thomas','mission6_start','mission6_result','final','gameover'] },
+  lucas:  { name:'LUCAS',  color:'#0f766e', initials:'LU', startScore:50,
+            pages: ['intro','rules','score_50','mission1_start','lucas_confession','mission2_start','mission2_lucas','mission3_start','lucas_destroy','mission4_start','cave_wait','mission5_lucas','mission6_start','mission6_result','final','gameover'] },
+  kevin:  { name:'KEVIN',  color:'#b45309', initials:'KE', startScore:50,
+            pages: ['intro','rules','score_50','mission1_kevin_refuse','kevin_eliminated','mission4_start','cave_kevin','mission5_skip','mission6_start','mission6_kevin','final','gameover'] },
+  julien: { name:'JULIEN', color:'#4c1d95', initials:'JU', startScore:50,
+            pages: ['intro','rules','score_50','mission1_start','julien_confession','mission2_start','julien_designated','mission3_start','julien_skip','mission6_start','julien_zero','final','gameover'] },
+  claire: { name:'CLAIRE', color:'#be185d', initials:'CL', startScore:50,
+            pages: ['intro','rules','score_50','mission1_start','claire_confession','score_70','mission2_start','mission2_claire','mission3_start','claire_destroy','mission4_start','cave_wait','mission5_self','mission6_start','mission6_result','final','gameover'] },
+  elise:  { name:'ÉLISE',  color:'#065f46', initials:'ÉL', startScore:50,
+            pages: ['intro','rules','score_50','mission1_start','elise_confession','score_70','mission2_elise_refuse','mission3_start','elise_destroy','mission4_start','cave_wait','mission5_self','mission6_start','elise_refuses_vote','final','gameover'] },
+};
+
+let currentChar = null;
+let currentPages = [];
+let currentPageIdx = 0;
+let currentScore = 50;
+
+function selectChar(key) {
+  currentChar = CHARS[key];
+  currentPages = currentChar.pages;
+  currentPageIdx = 0;
+  currentScore = currentChar.startScore;
+
+  showScreen('game');
+  renderPage();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function updateScoreDisplay() {
+  const el = document.getElementById('score-display');
+  el.textContent = currentScore + ' / 100';
+  el.style.color = currentScore <= 20 ? 'var(--danger)' : currentScore >= 80 ? 'var(--green)' : 'var(--warn)';
+}
+
+function nextPage() {
+  currentPageIdx++;
+  if (currentPageIdx >= currentPages.length) return;
+  renderPage();
+}
+
+// ── Page Renderer ──
+function renderPage() {
+  const pageId = currentPages[currentPageIdx];
+  const container = document.getElementById('game-content');
+  container.scrollTo({ top: 0, behavior: 'smooth' });
+  container.innerHTML = buildPage(pageId);
+  updateScoreDisplay();
+}
+
+function buildPage(id) {
+  const pages = {
+
+    intro: `
+      <div class="page-block">
+        <div class="section-label">▶ SYSTÈME EN LIGNE</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — NOTIFICATION</div>
+          <div class="notif-title">LE JEU COMMENCE MAINTENANT.</div>
+          <div class="notif-body">Sept téléphones. Même tonalité. Même instant.<br>Impossible à ignorer.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">⚠</div>
+          <div class="alert-text">Toutes les sorties sont verrouillées. Des caméras et micros sont installés dans la maison.</div>
+        </div>
+        <div class="scroll-hint">DÉFILER ▼</div>
+        ${hiddenBtn()}
+      </div>`,
+
+    rules: `
+      <div class="page-block">
+        <div class="section-label">📋 LES RÈGLES</div>
+        <div class="rule-item"><span class="rule-icon">▸</span> Chaque joueur commence avec <strong>50 points</strong>.</div>
+        <div class="rule-item"><span class="rule-icon">▸</span> Score <strong>0</strong> → tu quittes le jeu. <em style="color:var(--danger)">(La mort)</em></div>
+        <div class="rule-item"><span class="rule-icon">▸</span> Score <strong>100</strong> → tu survis.</div>
+        <div class="rule-item"><span class="rule-icon">▸</span> Chaque mission a un <strong>temps limité</strong>.</div>
+        <div class="rule-item"><span class="rule-icon">▸</span> Refuser = <strong>pénalité de points</strong>.</div>
+        <div class="rule-item"><span class="rule-icon">▸</span> Mentir = <strong>pénalité doublée</strong>.</div>
+        <div class="rule-item" style="border-color:var(--danger)"><span class="rule-icon">▸</span> <strong style="color:var(--accent)">Le jeu est réel. Ne testez pas sa patience.</strong></div>
+        <div class="scroll-hint">DÉFILER ▼</div>
+        ${hiddenBtn()}
+      </div>`,
+
+    score_50: `
+      <div class="page-block">
+        <div class="section-label">📊 TON SCORE</div>
+        <div class="score-display">
+          <div class="score-number" style="color:var(--warn)">50</div>
+          <div class="score-label">POINTS — DÉPART</div>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:50%"></div></div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">ℹ</div>
+          <div class="alert-text">Score de départ standard. Reste au-dessus de 0 pour survivre.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    score_35: `
+      <div class="page-block">
+        <div class="section-label">📊 TON SCORE — PÉNALITÉ</div>
+        <div class="score-display">
+          <div class="score-number" style="color:var(--danger)">35</div>
+          <div class="score-label">POINTS — −15 (DÉPART DE PIÈCE)</div>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:35%; background:var(--danger)"></div></div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">MARC — NE QUITTE PAS LA PIÈCE. PÉNALITÉ : −15 POINTS.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    score_70: `
+      <div class="page-block">
+        <div class="section-label">📊 MISE À JOUR DU SCORE</div>
+        <div class="score-display">
+          <div class="score-number" style="color:var(--green)">70</div>
+          <div class="score-label">POINTS — MISSION ACCOMPLIE +20</div>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:70%"></div></div>
+        </div>
+        <div class="alert-card success">
+          <div class="alert-icon">✓</div>
+          <div class="alert-text">Mission accomplie. Poursuis le jeu.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission1_start: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 1</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 01 —</div>
+            <div class="mission-title">'LA CONFESSION'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Révèle un secret <strong>dangereux</strong> devant tout le groupe.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Temps imparti : 30 secondes</div>
+              <div class="mission-rule">✗ Refuser = −20 points</div>
+            </div>
+            <div class="timer-box">
+              <div>
+                <div class="timer-num">30</div>
+                <div class="timer-label">SECONDES</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    claire_confession: `
+      <div class="page-block">
+        <div class="section-label">💬 CLAIRE — CONFESSION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">CLAIRE — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 70/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Claire a révélé une relation secrète avec Antoine — l'ancien meilleur ami de Marc. Deux ans de secret exposés en une phrase.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">😶</div>
+          <div class="alert-text">Marc ne dit rien. Ses épaules sont contractées. Il fixe la nuit dehors.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    thomas_confession: `
+      <div class="page-block">
+        <div class="section-label">💬 THOMAS — CONFESSION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">THOMAS — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 70/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Thomas a avoué avoir triché à son examen de fin d'études. Sa mère croit qu'il a tout obtenu honnêtement.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">🤫</div>
+          <div class="alert-text">Élise : "Ça reste ici. Entre amis."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    lucas_confession: `
+      <div class="page-block">
+        <div class="section-label">💬 LUCAS — CONFESSION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">LUCAS — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 70/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Lucas est en train de divorcer. Sa femme ne sait pas encore qu'il a signé les papiers il y a 3 semaines.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    elise_confession: `
+      <div class="page-block">
+        <div class="section-label">💬 ÉLISE — CONFESSION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">ÉLISE — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 70/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Le père d'Élise est atteint d'un cancer du poumon stade 3. Elle l'avait caché à tout le monde par honte.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">🤝</div>
+          <div class="alert-text">Thomas lui serre la main. Personne ne parle pendant un moment.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    julien_confession: `
+      <div class="page-block">
+        <div class="section-label">💬 JULIEN — CONFESSION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">JULIEN — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 70/100</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">⚡</div>
+          <div class="alert-text">"Je connais le créateur de cette application."</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">❓</div>
+          <div class="alert-text">Le groupe est sous le choc. Kevin se lève d'un bond. Marc s'avance vers lui, les yeux dans les yeux.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission1_kevin_refuse: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 1 — REFUS</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 01 —</div>
+            <div class="mission-title">'LA CONFESSION'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Révèle un secret dangereux devant le groupe.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Temps écoulé</div>
+              <div class="mission-rule">✗ KEVIN — REFUS — −20 points</div>
+            </div>
+          </div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">KEVIN — TEMPS ÉCOULÉ. −20 POINTS. SCORE : 30/100</div>
+        </div>
+        <div class="score-display">
+          <div class="score-number" style="color:var(--danger)">30</div>
+          <div class="score-label">POINTS RESTANTS</div>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:30%; background:var(--danger)"></div></div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission2_start: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 2</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 02 —</div>
+            <div class="mission-title">'LE CHOIX'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Désigne une personne du groupe. Cette personne perd <strong>15 points</strong>.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Temps imparti : 45 secondes</div>
+              <div class="mission-rule">✗ Refuser = tu perds 15 points toi-même</div>
+              <div class="mission-rule">⚡ Tout le monde joue — un après l'autre</div>
+            </div>
+            <div class="timer-box">
+              <div>
+                <div class="timer-num">45</div>
+                <div class="timer-label">SECONDES</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission2_result_marc: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 2 — RÉSULTATS</div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🎯</div>
+          <div class="alert-text">KEVIN désigne MARC → −15 pts<br>MARC : 35 → <strong>40 pts</strong></div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">💀</div>
+          <div class="alert-text">CLAIRE + JULIEN désignent KEVIN → KEVIN tombe à <strong>0</strong></div>
+        </div>
+        <div class="elim-card">
+          <div class="elim-title">KEVIN — ÉLIMINÉ</div>
+          <div class="elim-sub">SCORE : 0 — RESTE ET OBSERVE</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission2_thomas: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 2 — TON CHOIX</div>
+        <div class="alert-card warn">
+          <div class="alert-icon">🎯</div>
+          <div class="alert-text">Thomas désigne Julien (70 pts, impact minimal).</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">💀</div>
+          <div class="alert-text">Kevin est désigné par plusieurs joueurs → éliminé à 0.</div>
+        </div>
+        <div class="elim-card">
+          <div class="elim-title">KEVIN — ÉLIMINÉ</div>
+          <div class="elim-sub">SCORE : 0 — RESTE ET OBSERVE</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission2_lucas: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 2 — TON CHOIX</div>
+        <div class="alert-card info">
+          <div class="alert-icon">🧠</div>
+          <div class="alert-text">Lucas désigne Kevin (le plus exposé). Décision logique.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">💀</div>
+          <div class="alert-text">Kevin tombe à 0 — plusieurs désignations simultanées.</div>
+        </div>
+        <div class="elim-card">
+          <div class="elim-title">KEVIN — ÉLIMINÉ</div>
+          <div class="elim-sub">SCORE : 0 — RESTE ET OBSERVE</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission2_claire: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 2 — TON CHOIX</div>
+        <div class="alert-card warn">
+          <div class="alert-icon">🎯</div>
+          <div class="alert-text">Claire désigne Kevin — il est déjà à 30, le plus exposé.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">💀</div>
+          <div class="alert-text">Kevin éliminé. Score : 0.</div>
+        </div>
+        <div class="elim-card">
+          <div class="elim-title">KEVIN — ÉLIMINÉ</div>
+          <div class="elim-sub">SCORE : 0 — RESTE ET OBSERVE</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission2_elise_refuse: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 2 — REFUS</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 02 —</div>
+            <div class="mission-title">'LE CHOIX'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">"Je refuse. Je ne désignerai personne."</div>
+          </div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">ÉLISE — REFUS — −15 POINTS. SCORE : 55/100</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💪</div>
+          <div class="alert-text">Élise : "Je prends ce risque. Ce n'est pas négociable."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    julien_designated: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 2 — JULIEN DÉSIGNÉ</div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🎯</div>
+          <div class="alert-text">Thomas désigne Julien → JULIEN −15 pts → Score : 55/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">💀</div>
+          <div class="alert-text">Kevin éliminé → Score : 0</div>
+        </div>
+        <div class="elim-card">
+          <div class="elim-title">KEVIN — ÉLIMINÉ</div>
+          <div class="elim-sub">SCORE : 0 — RESTE ET OBSERVE</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission3_start: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 3</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 03 —</div>
+            <div class="mission-title">'LA DESTRUCTION'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Détruis l'objet le plus <strong>précieux</strong> que tu as sur toi.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Temps imparti : 60 secondes</div>
+              <div class="mission-rule">✗ Refuser = −25 points</div>
+            </div>
+            <div class="timer-box">
+              <div>
+                <div class="timer-num">60</div>
+                <div class="timer-label">SECONDES</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    watch_destroy: `
+      <div class="page-block">
+        <div class="section-label">💔 MARC — DESTRUCTION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">MARC — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 60/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">⌚</div>
+          <div class="alert-text">Marc lance sa montre contre le mur. La montre de son père. Le mécanisme se brise. Des éclats de verre scintillent sur le parquet.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">🤐</div>
+          <div class="alert-text">Il contemple les débris. Ne les touche pas. "C'est fait. Continuez."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    thomas_destroy: `
+      <div class="page-block">
+        <div class="section-label">💔 THOMAS — DESTRUCTION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">THOMAS — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 80/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">✉</div>
+          <div class="alert-text">Thomas déchire d'abord son portefeuille, puis une lettre écrite de la main de sa mère. Il pleure en silence, les épaules secouées.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    lucas_destroy: `
+      <div class="page-block">
+        <div class="section-label">💔 LUCAS — DESTRUCTION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">LUCAS — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 80/100</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💍</div>
+          <div class="alert-text">Lucas retire son alliance. La contemple un moment. La lance dans la poubelle de la cuisine. Geste net, presque libérateur. Personne ne sait quoi dire.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    elise_destroy: `
+      <div class="page-block">
+        <div class="section-label">💔 ÉLISE — DESTRUCTION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">ÉLISE — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 90/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">📷</div>
+          <div class="alert-text">Élise sort une photo froissée. Ses parents jeunes, avant la maladie. Elle la déchire lentement, les yeux fermés. Un morceau dans chaque main.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Thomas : "Non, c'est pas juste une photo. Et tu le sais."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    claire_destroy: `
+      <div class="page-block">
+        <div class="section-label">💔 CLAIRE — DESTRUCTION</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — RÉSULTAT</div>
+          <div class="notif-title">CLAIRE — MISSION ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--accent)">+20 points → Score : 70/100</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">🔒</div>
+          <div class="alert-text">Claire tient quelque chose de petit dans sa main fermée. Sans un mot, elle le plie jusqu'à le casser. Puis le met dans sa poche. Personne ne sait ce que c'était.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    julien_skip: `
+      <div class="page-block">
+        <div class="section-label">⚡ JULIEN — DESTRUCTION</div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">JULIEN — TEMPS ÉCOULÉ. −25 POINTS. SCORE : 30/100</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Julien : "J'ai tout laissé chez moi ce soir." Kevin : "Il s'est préparé. Il savait que quelque chose allait se passer."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission4_start: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 4</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 04 —</div>
+            <div class="mission-title">'L'ABANDON'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Une personne doit aller <strong>seule dans la cave</strong> pendant 10 minutes. Le groupe ne peut pas intervenir.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Durée : 10 minutes</div>
+              <div class="mission-rule">✗ Ouvrir la porte = −30 pts pour la personne dans la cave</div>
+              <div class="mission-rule">⚡ Désignez maintenant — 30 secondes</div>
+            </div>
+          </div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💪</div>
+          <div class="alert-text">Kevin se désigne volontairement. "Si c'est moi ou Thomas, ou Élise... j'y vais."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    cave_wait: `
+      <div class="page-block">
+        <div class="section-label">⏳ ATTENTE — CAVE</div>
+        <div class="timer-box">
+          <div>
+            <div class="timer-num">10:00</div>
+            <div class="timer-label">COMPTE À REBOURS</div>
+          </div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">🕳</div>
+          <div class="alert-text">Kevin est dans la cave. Seul dans le noir. Ampoule qui clignote. Odeur de terre humide.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">📸</div>
+          <div class="alert-text">Dans la cave : des photos de vous sur les murs. Vos maisons. Vos voitures. Des moments ordinaires photographiés en secret.</div>
+        </div>
+        <div class="notif-card" style="margin-top:4px">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME — MISSION ACCOMPLIE</div>
+          <div class="notif-title">+15 POINTS POUR TOUS</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    cave_kevin: `
+      <div class="page-block">
+        <div class="section-label">🕳 KEVIN — DANS LA CAVE</div>
+        <div class="timer-box">
+          <div>
+            <div class="timer-num">10:00</div>
+            <div class="timer-label">COMPTE À REBOURS</div>
+          </div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">📸</div>
+          <div class="alert-text">Il y a des photos sur les murs de la cave. Des photos de vous tous. Vos maisons, vos voitures — des moments ordinaires capturés en secret.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">"C'est correct. C'est juste dix minutes. T'as survécu à pire." — Kevin, à lui-même.</div>
+        </div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME</div>
+          <div class="notif-title">MISSION 4 ACCOMPLIE</div>
+          <div class="notif-body" style="color:var(--green)">+15 points pour tous les joueurs.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission5_start: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 5</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 05 —</div>
+            <div class="mission-title">'LA DOULEUR'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Inflige-toi une douleur physique (non mortelle) pour gagner +20 points. <strong>OU</strong> désigne une personne qui perd 30 points à ta place.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Temps imparti : 60 secondes</div>
+              <div class="mission-rule">Option A : Douleur physique → +20</div>
+              <div class="mission-rule">Option B : Désigner quelqu'un → −30 pour eux</div>
+            </div>
+          </div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission5_result: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 5 — RÉSULTATS</div>
+        <div class="alert-card success">
+          <div class="alert-icon">💡</div>
+          <div class="alert-text">Claire trouve une troisième option : se désigner soi-même. Pénalité sur soi plutôt que blesser quelqu'un.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">✓</div>
+          <div class="alert-text">Claire, Élise, Thomas, Julien choisissent la désignation personnelle. −25 pts chacun.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">⚠</div>
+          <div class="alert-text">JULIEN → Score : 5/100. Au bord du précipice.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission5_thomas: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 5 — TON CHOIX</div>
+        <div class="alert-card success">
+          <div class="alert-icon">💡</div>
+          <div class="alert-text">Thomas suit Claire : désignation personnelle. "J'ai 85 points, je peux me le permettre."</div>
+        </div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME</div>
+          <div class="notif-title">THOMAS — DÉSIGNATION PERSONNELLE</div>
+          <div class="notif-body" style="color:var(--warn)">−25 points → Score : 60/100</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission5_lucas: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 5 — TON CHOIX</div>
+        <div class="alert-card success">
+          <div class="alert-icon">💡</div>
+          <div class="alert-text">Lucas : désignation personnelle. "Perdre des points mais garder son intégrité."</div>
+        </div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME</div>
+          <div class="notif-title">LUCAS — DÉSIGNATION PERSONNELLE</div>
+          <div class="notif-body" style="color:var(--warn)">−25 points → Score : 55/100</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission5_self: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 5 — DÉSIGNATION PERSONNELLE</div>
+        <div class="notif-card">
+          <div class="notif-app"><span class="notif-dot"></span> THE GAME</div>
+          <div class="notif-title">DÉSIGNATION PERSONNELLE</div>
+          <div class="notif-body" style="color:var(--warn)">−25 points sur toi-même.</div>
+        </div>
+        <div class="alert-card success">
+          <div class="alert-icon">💡</div>
+          <div class="alert-text">Plutôt que de blesser quelqu'un ou te faire du mal physiquement, tu prends la pénalité sur toi-même.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission5_skip: `
+      <div class="page-block">
+        <div class="section-label">⚡ KEVIN — ÉLIMINÉ</div>
+        <div class="elim-card">
+          <div class="elim-title">SCORE : 0</div>
+          <div class="elim-sub">MISSION 5 — NON APPLICABLE</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">👁</div>
+          <div class="alert-text">Kevin observe les autres. Il ne joue plus mais il voit tout.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission6_start: `
+      <div class="page-block">
+        <div class="section-label">🎯 MISSION 6</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION 06 —</div>
+            <div class="mission-title">'L'ACCUSÉ'</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc">Désignez un <strong>coupable</strong> parmi vous. Cette personne perd 40 points. Le vote doit être <strong>unanime</strong>.</div>
+            <div class="mission-rules">
+              <div class="mission-rule">⏱ Temps imparti : 90 secondes</div>
+              <div class="mission-rule">✗ Pas d'unanimité = −20 pts pour TOUS</div>
+            </div>
+          </div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">🎯</div>
+          <div class="alert-text">Le jeu veut que vous votiez pour Julien. Il a trahi le groupe. Il a vendu vos profils psychologiques contre de l'argent.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission6_result: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 6 — PAS D'UNANIMITÉ</div>
+        <div class="alert-card success">
+          <div class="alert-icon">🤝</div>
+          <div class="alert-text">Personne ne vote contre Julien. Le groupe refuse de désigner un coupable.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">PAS D'UNANIMITÉ — PÉNALITÉ COLLECTIVE : −20 POINTS POUR TOUS</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Marc : "On perd des points ensemble. On reste ensemble."</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">💀</div>
+          <div class="alert-text">JULIEN → Score : 0. ÉLIMINÉ. Il est toujours là physiquement.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    elise_refuses_vote: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 6 — ÉLISE REFUSE</div>
+        <div class="alert-card success">
+          <div class="alert-icon">💪</div>
+          <div class="alert-text">Élise : "Je ne voterai pas pour lui. Quelles que soient les circonstances. Je ne désignerai jamais quelqu'un comme coupable à éliminer."</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">PAS D'UNANIMITÉ — −20 POINTS POUR TOUS.</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Julien : "Ce que j'ai fait est indéfendable. Mais merci."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    mission6_kevin: `
+      <div class="page-block">
+        <div class="section-label">📊 MISSION 6 — KEVIN VOTE</div>
+        <div class="alert-card warn">
+          <div class="alert-icon">🎯</div>
+          <div class="alert-text">Kevin vote pour Julien. "Il nous a vendus. Sans hésiter."</div>
+        </div>
+        <div class="alert-card success">
+          <div class="alert-icon">🤝</div>
+          <div class="alert-text">Mais les autres refusent de voter. Pas d'unanimité. Kevin finit par baisser les yeux.</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-text">PAS D'UNANIMITÉ — −20 POINTS POUR TOUS.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    julien_zero: `
+      <div class="page-block">
+        <div class="section-label">💀 JULIEN — SCORE CRITIQUE</div>
+        <div class="elim-card">
+          <div class="elim-title">SCORE : 0</div>
+          <div class="elim-sub">JULIEN — ÉLIMINÉ</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">💬</div>
+          <div class="alert-text">Thomas : "Est-ce que tu ressens quelque chose de physique ?"<br>Julien : "Non. Je suis à zéro et je suis toujours là."</div>
+        </div>
+        <div class="alert-card warn">
+          <div class="alert-icon">❓</div>
+          <div class="alert-text">Kevin : "Preuve que c'est peut-être du bluff." Lucas : "Ou le vrai danger arrive à la fin."</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    kevin_eliminated: `
+      <div class="page-block">
+        <div class="section-label">💀 KEVIN — ÉLIMINÉ</div>
+        <div class="elim-card">
+          <div class="elim-title">SCORE : 0</div>
+          <div class="elim-sub">STATUT : ÉLIMINÉ — RESTE ET OBSERVE</div>
+        </div>
+        <div class="alert-card danger">
+          <div class="alert-icon">😡</div>
+          <div class="alert-text">"D'accord. Je suis mort dans votre jeu. Et vous restez là assis à continuer comme si de rien était."</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">👁</div>
+          <div class="alert-text">Kevin observe maintenant. Il voit tout mais ne joue plus.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    final: `
+      <div class="page-block">
+        <div class="section-label">🔴 MISSION FINALE</div>
+        <div class="mission-card">
+          <div class="mission-header">
+            <div class="mission-num">MISSION FINALE —</div>
+            <div class="mission-title">LE CHOIX ULTIME</div>
+          </div>
+          <div class="mission-body">
+            <div class="mission-desc" style="color:var(--accent);font-size:16px;font-weight:600">CHOISISSEZ UNE PERSONNE PARMI VOUS QUI MEURT.</div>
+            <div class="mission-desc">Les autres survivent et peuvent quitter la maison.</div>
+            <div class="mission-rules">
+              <div class="mission-rule" style="border-color:var(--danger);color:var(--accent)">⏱ Temps imparti : 3 minutes</div>
+              <div class="mission-rule" style="border-color:var(--danger)">Si vous ne choisissez pas — tout le monde meurt.</div>
+            </div>
+            <div class="timer-box">
+              <div>
+                <div class="timer-num" style="color:var(--danger)">3:00</div>
+                <div class="timer-label">MINUTES</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="alert-card success">
+          <div class="alert-icon">🤝</div>
+          <div class="alert-text">Marc : "Je ne serai pas quelqu'un qui a fait ça à un ami. Ce soir je suis arrivé avec sept personnes que j'aime. Je refuse de perdre les personnes."</div>
+        </div>
+        <div class="alert-card info">
+          <div class="alert-icon">🔵</div>
+          <div class="alert-text">Ils forment un cercle au centre de la chambre. Personne ne choisit. Le compte à rebours atteint zéro.</div>
+        </div>
+        ${hiddenBtn()}
+      </div>`,
+
+    gameover: `
+      <div class="page-block" style="justify-content:center;align-items:center;text-align:center;gap:20px;min-height:100%">
+        <div style="font-size:56px">☠</div>
+        <div style="font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--danger);letter-spacing:3px">TEMPS ÉCOULÉ</div>
+        <div style="font-family:'Orbitron',monospace;font-size:14px;color:var(--muted);letter-spacing:3px">VOUS AVEZ ÉCHOUÉ.</div>
+        <div class="notif-card" style="margin-top:10px">
+          <div class="notif-title" style="font-size:13px;letter-spacing:3px">📱 GAME OVER.</div>
+          <div class="notif-body">📱 SEE YOU IN THE NEXT ROUND.</div>
+        </div>
+        <div style="margin-top:16px">
+          <div style="height:2px;background:linear-gradient(90deg, transparent, var(--accent), transparent);margin-bottom:16px"></div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:4px;color:#2a2a2a">FIN</div>
+        </div>
+        <button onclick="backToSelect()" style="margin-top:20px;background:transparent;border:1px solid #222;border-radius:8px;color:#333;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;padding:8px 16px;cursor:pointer">↺ RECOMMENCER</button>
+      </div>`
+  };
+
+  return pages[id] || `<div class="page-block"><div class="section-label">PAGE : ${id}</div></div>`;
+}
+
+function hiddenBtn() {
+  return `<div class="scroll-hint">· · ·</div><div class="hidden-btn" onclick="nextPage()" title=""></div>`;
+}
+
+function backToSelect() {
+  showScreen('select');
+}
+
+// Remove intro after animation
+setTimeout(() => {
+  const intro = document.getElementById('intro');
+  if (intro) intro.remove();
+}, 3800);
+</script>
+</body>
+</html>
